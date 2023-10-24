@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using TrackerLibrary;
+﻿using TrackerLibrary;
 using TrackerLibrary.Models;
 using TrackerUI.Interfaces;
 
@@ -49,5 +40,10 @@ namespace TrackerUI
             LinkLists();
         }
 
+        private void loadTournamentButton_Click(object sender, EventArgs e)
+        {
+            TournamentViewer tvForm = new TournamentViewer( (Tournament)loadTournamentComboBox.SelectedItem );
+            tvForm.Show();
+        }
     }
 }

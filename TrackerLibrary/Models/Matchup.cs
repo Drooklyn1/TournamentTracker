@@ -33,6 +33,36 @@ namespace TrackerLibrary.Models
         /// </summary>
         public List<MatchupEntry> Entries { get; set; } = new List<MatchupEntry>();
 
+        /// <summary>
+        /// Generates a string to display for the matchup
+        /// </summary>
+        public string DisplayName 
+        { 
+            get
+            {
+                string s = $"{ID}: ";
+
+                foreach (MatchupEntry me in Entries)
+                {
+                    if (me.TeamCompeting != null)
+                    {
+                        s += $"{me.TeamCompeting.TeamName}";
+
+                        if (Entries.Count == 1) s += " -> has a bye";
+                        else if (me == Entries[0]) s += " -vs- ";
+                    }
+                    else if (me.ParentMatchup != null)
+                    {
+                        s += $"Winner of {me.ParentMatchup.ID}";
+                        if (me == Entries[0]) s += " -vs- ";
+                    }
+                }
+
+                return s;
+            }
+        }
+
+
         public Matchup()
         {
 
