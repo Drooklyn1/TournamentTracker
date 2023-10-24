@@ -95,31 +95,30 @@ namespace TrackerUI
                     if (selectedMatchup.Entries[0].TeamCompeting != null)
                     {
                         selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-
-                        UpdateNextRound();
                     }
                 }
                 else if (selectedMatchup.Entries.Count == 2)
                 {
                     if (selectedMatchup.Entries[0].TeamCompeting != null && selectedMatchup.Entries[1].TeamCompeting != null)
                     {
-                        selectedMatchup.Entries[0].Score = int.Parse(teamOneScoreBox.Text);
-                        selectedMatchup.Entries[1].Score = int.Parse(teamTwoScoreBox.Text);
+                        if ( double.TryParse( teamOneScoreBox.Text, out double scoreOne ) )
+                            selectedMatchup.Entries[0].Score = scoreOne;
+
+                        if ( double.TryParse( teamTwoScoreBox.Text, out double scoreTwo ) )
+                            selectedMatchup.Entries[1].Score = scoreTwo;
 
                         if (selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score)
                         {
                             selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-
-                            UpdateNextRound();
                         }
                         else if (selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score)
                         {
                             selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
-
-                            UpdateNextRound();
                         }
                     }
                 }
+
+                UpdateNextRound();
             }
         }
 
@@ -127,17 +126,20 @@ namespace TrackerUI
         {
             // update TeamCompeting of matchup entry in next round with the Winner
 
-            int selectedRound = (int)roundComboBox.SelectedItem;
-
-            if (selectedRound < tournament.Rounds.Count)
+            if (selectedMatchup.Winner != null)
             {
-                foreach (Matchup m in tournament.Rounds[selectedRound])
-                {
-                    List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup == selectedMatchup).ToList();
+                int selectedRound = (int)roundComboBox.SelectedItem;
 
-                    if (foundEntry.Count > 0)
+                if (selectedRound < tournament.Rounds.Count)
+                {
+                    foreach (Matchup m in tournament.Rounds[selectedRound])
                     {
-                        foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                        List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup == selectedMatchup).ToList();
+
+                        if (foundEntry.Count > 0)
+                        {
+                            foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                        }
                     }
                 }
             }
