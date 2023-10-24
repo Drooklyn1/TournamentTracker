@@ -12,7 +12,7 @@ namespace TrackerUI
         {
             InitializeComponent();
             LoadAllTournamentsList();
-            LinkLists();
+            LinkList();
         }
 
         private void LoadAllTournamentsList()
@@ -20,7 +20,7 @@ namespace TrackerUI
             existingTournaments = GlobalConfig.Connection.GetAllTournaments();
         }
 
-        private void LinkLists()
+        private void LinkList()
         {
             loadTournamentComboBox.DataSource = null;
             loadTournamentComboBox.DataSource = existingTournaments;
@@ -37,13 +37,19 @@ namespace TrackerUI
         {
             existingTournaments.Add(newTournament);
 
-            LinkLists();
+            LinkList();
         }
 
         private void loadTournamentButton_Click(object sender, EventArgs e)
         {
-            TournamentViewer tvForm = new TournamentViewer( (Tournament)loadTournamentComboBox.SelectedItem );
+            TournamentViewer tvForm = new TournamentViewer((Tournament)loadTournamentComboBox.SelectedItem);
             tvForm.Show();
+        }
+
+        private void refreshTournamentsButton_Click(object sender, EventArgs e)
+        {
+            LoadAllTournamentsList();
+            LinkList();
         }
     }
 }

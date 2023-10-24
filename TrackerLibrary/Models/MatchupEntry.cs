@@ -38,6 +38,28 @@ namespace TrackerLibrary.Models
         /// </summary>
         public Matchup ParentMatchup { get; set; }
 
+        /// <summary>
+        /// Generates a string to display for the matchup
+        /// </summary>
+        public string DisplayName
+        {
+            get
+            {
+                string s = "";
+
+                if (TeamCompeting != null)
+                {
+                    s += $"{TeamCompeting.TeamName}";
+                }
+                else if (ParentMatchup != null)
+                {
+                    s += $"Winner of {ParentMatchup.ID}";
+                }
+
+                return s;
+            }
+        }
+
         public MatchupEntry()
         {
 

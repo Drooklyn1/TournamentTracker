@@ -6,7 +6,8 @@ namespace TrackerUI
     {
         private Tournament tournament;
         private List<int> rounds;
-        private List<string> matchupStrings;
+        private List<Matchup> matchups;
+        private Matchup selectedMatchup;
 
         public TournamentViewer(Tournament loadedTournament)
         {
@@ -14,10 +15,10 @@ namespace TrackerUI
 
             tournament = loadedTournament;
 
-            LoadFormData();
+            LoadTournamentData();
         }
 
-        private void LoadFormData()
+        private void LoadTournamentData()
         {
             nameLabel.Text = tournament.TournamentName;
 
@@ -41,18 +42,89 @@ namespace TrackerUI
             roundComboBox.DataSource = rounds;
         }
 
-        private void LinkMatchupStrings()
+        private void LoadMatchups()
         {
-            int round = (int)roundComboBox.SelectedItem;
+            matchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1];
+        }
 
+        private void LinkMatchups()
+        {
             matchupListBox.DataSource = null;
-            matchupListBox.DataSource = tournament.Rounds[round - 1];
+            matchupListBox.DataSource = matchups;
             matchupListBox.DisplayMember = "DisplayName";
+        }
+
+        private void OpenMatchup()
+        {
+            selectedMatchup = (Matchup)matchupListBox.SelectedItem;
+
+            if (selectedMatchup != null)
+            {
+                if (selectedMatchup.Entries.Count > 0)
+                {
+                    teamOneLabel.Text = selectedMatchup.Entries[0].DisplayName;
+                    teamOneScoreBox.Text = selectedMatchup.Entries[0].Score.ToString();
+
+                    if (selectedMatchup.Entries.Count > 1)
+                    {
+                        teamTwoLabel.Text = selectedMatchup.Entries[1].DisplayName;
+                        teamTwoScoreBox.Text = selectedMatchup.Entries[1].Score.ToString();
+                    }
+                    else
+                    {
+                        teamTwoLabel.Text = "Bye";
+                        teamTwoScoreBox.Text = "0";
+                    }
+                }
+            }
+        }
+
+        private void PlayMatch()
+        {
+            if (selectedMatchup != null)
+            {
+                if (selectedMatchup.Entries.Count == 1)
+                {
+                    if (selectedMatchup.Entries[0].TeamCompeting != null)
+                    {
+                        selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+                    }
+                }
+                else if (selectedMatchup.Entries.Count == 2)
+                {
+                    if (selectedMatchup.Entries[0].TeamCompeting != null && selectedMatchup.Entries[1].TeamCompeting != null)
+                    {
+                        selectedMatchup.Entries[0].Score = int.Parse(teamOneScoreBox.Text);
+                        selectedMatchup.Entries[1].Score = int.Parse(teamTwoScoreBox.Text);
+
+                        if ( selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score )
+                        {
+                            selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+                        }
+                        else if ( selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score )
+                        {
+                            selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
+                        }
+                    }
+                }
+            }
         }
 
         private void roundComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            LinkMatchupStrings();
+            LoadMatchups();
+            LinkMatchups();
+        }
+
+        private void matchupListBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            OpenMatchup();
+        }
+
+        private void playButton_Click(object sender, EventArgs e)
+        {
+            PlayMatch();
+            LinkMatchups();
         }
     }
 }

@@ -44,18 +44,15 @@ namespace TrackerLibrary.Models
 
                 foreach (MatchupEntry me in Entries)
                 {
-                    if (me.TeamCompeting != null)
-                    {
-                        s += $"{me.TeamCompeting.TeamName}";
+                    s += $"{me.DisplayName}";
 
-                        if (Entries.Count == 1) s += " -> has a bye";
-                        else if (me == Entries[0]) s += " -vs- ";
-                    }
-                    else if (me.ParentMatchup != null)
-                    {
-                        s += $"Winner of {me.ParentMatchup.ID}";
-                        if (me == Entries[0]) s += " -vs- ";
-                    }
+                    if (Entries.Count == 1) s += " -vs- Bye";
+                    else if (me == Entries[0]) s += " -vs- ";
+                }
+
+                if (Winner != null)
+                {
+                    s += $"   => Winner {Winner.TeamName}";
                 }
 
                 return s;

@@ -34,6 +34,7 @@
             loadTournamentLabel = new Label();
             loadTournamentButton = new Button();
             createTournamentButton = new Button();
+            refreshTournamentsButton = new Button();
             SuspendLayout();
             // 
             // headerLabel
@@ -90,12 +91,25 @@
             createTournamentButton.UseVisualStyleBackColor = true;
             createTournamentButton.Click += createTournamentButton_Click;
             // 
+            // refreshTournamentsButton
+            // 
+            refreshTournamentsButton.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point);
+            refreshTournamentsButton.ForeColor = Color.SteelBlue;
+            refreshTournamentsButton.Location = new Point(427, 109);
+            refreshTournamentsButton.Name = "refreshTournamentsButton";
+            refreshTournamentsButton.Size = new Size(120, 29);
+            refreshTournamentsButton.TabIndex = 35;
+            refreshTournamentsButton.Text = "Refresh";
+            refreshTournamentsButton.UseVisualStyleBackColor = true;
+            refreshTournamentsButton.Click += refreshTournamentsButton_Click;
+            // 
             // TournamentDashboard
             // 
             AutoScaleDimensions = new SizeF(9F, 21F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.WindowFrame;
             ClientSize = new Size(584, 280);
+            Controls.Add(refreshTournamentsButton);
             Controls.Add(createTournamentButton);
             Controls.Add(loadTournamentButton);
             Controls.Add(loadTournamentComboBox);
@@ -117,5 +131,6 @@
         private Label loadTournamentLabel;
         private Button loadTournamentButton;
         private Button createTournamentButton;
+        private Button refreshTournamentsButton;
     }
 }
