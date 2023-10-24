@@ -6,7 +6,7 @@ namespace TrackerUI
     {
         private Tournament tournament;
         private List<int> rounds;
-        private List<Matchup> matchups;
+        private List<Matchup> selectedMatchups;
         private Matchup selectedMatchup;
 
         public TournamentViewer(Tournament loadedTournament)
@@ -44,13 +44,20 @@ namespace TrackerUI
 
         private void LoadMatchups()
         {
-            matchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1];
+            if (roundCheckBox.Checked)
+            {
+                selectedMatchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1].Where(x => x.Winner == null).ToList();
+            }
+            else
+            {
+                selectedMatchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1];
+            }
         }
 
         private void LinkMatchups()
         {
             matchupListBox.DataSource = null;
-            matchupListBox.DataSource = matchups;
+            matchupListBox.DataSource = selectedMatchups;
             matchupListBox.DisplayMember = "DisplayName";
         }
 
@@ -88,6 +95,8 @@ namespace TrackerUI
                     if (selectedMatchup.Entries[0].TeamCompeting != null)
                     {
                         selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+
+                        UpdateNextRound();
                     }
                 }
                 else if (selectedMatchup.Entries.Count == 2)
@@ -97,20 +106,50 @@ namespace TrackerUI
                         selectedMatchup.Entries[0].Score = int.Parse(teamOneScoreBox.Text);
                         selectedMatchup.Entries[1].Score = int.Parse(teamTwoScoreBox.Text);
 
-                        if ( selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score )
+                        if (selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score)
                         {
                             selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+
+                            UpdateNextRound();
                         }
-                        else if ( selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score )
+                        else if (selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score)
                         {
                             selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
+
+                            UpdateNextRound();
                         }
                     }
                 }
             }
         }
 
+        private void UpdateNextRound()
+        {
+            // update TeamCompeting of matchup entry in next round with the Winner
+
+            int selectedRound = (int)roundComboBox.SelectedItem;
+
+            if (selectedRound < tournament.Rounds.Count)
+            {
+                foreach (Matchup m in tournament.Rounds[selectedRound])
+                {
+                    List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup == selectedMatchup).ToList();
+
+                    if (foundEntry.Count > 0)
+                    {
+                        foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                    }
+                }
+            }
+        }
+
         private void roundComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            LoadMatchups();
+            LinkMatchups();
+        }
+
+        private void roundCheckBox_CheckedChanged(object sender, EventArgs e)
         {
             LoadMatchups();
             LinkMatchups();
@@ -124,7 +163,9 @@ namespace TrackerUI
         private void playButton_Click(object sender, EventArgs e)
         {
             PlayMatch();
+            LoadMatchups();
             LinkMatchups();
         }
+
     }
 }

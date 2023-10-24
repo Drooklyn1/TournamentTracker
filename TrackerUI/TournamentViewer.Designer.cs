@@ -115,6 +115,7 @@
             roundCheckBox.TabIndex = 6;
             roundCheckBox.Text = "Unplayed Only";
             roundCheckBox.UseVisualStyleBackColor = true;
+            roundCheckBox.CheckedChanged += roundCheckBox_CheckedChanged;
             // 
             // matchupListBox
             // 
