@@ -1,5 +1,6 @@
 ﻿using TrackerLibrary.Models;
 using TrackerLibrary.Connections.FileProcesses;
+using System.Text.RegularExpressions;
 
 namespace TrackerLibrary.Connections
 {
@@ -148,12 +149,23 @@ namespace TrackerLibrary.Connections
 
         public void UpdateMatchup(Matchup matchup)
         {
-            throw new NotImplementedException();
+            List<string> matchupsData = GlobalConfig.MatchupsFile.FullFilePath().LoadFile();
+            List<string> matchupEntriesData = GlobalConfig.MatchupEntriesFile.FullFilePath().LoadFile();
+
+            if (matchup.Winner != null && matchup.Entries.Count > 0)
+            {
+                FileProcessor.UpdateMatchup(matchupsData, matchupEntriesData, matchup);
+            }
         }
 
         public void UpdateMatchupEntry(MatchupEntry matchupEntry)
         {
-            throw new NotImplementedException();
+            List<string> matchupEntriesData = GlobalConfig.MatchupEntriesFile.FullFilePath().LoadFile();
+
+            if (matchupEntry.TeamCompeting != null)
+            {
+                FileProcessor.UpdateMatchupEntry(matchupEntriesData, matchupEntry);
+            }
         }
     }
 }

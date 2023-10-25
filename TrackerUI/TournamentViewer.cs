@@ -147,7 +147,7 @@ namespace TrackerUI
                 {
                     foreach (Matchup m in tournament.Rounds[selectedRound])
                     {
-                        List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup == selectedMatchup).ToList();
+                        List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
 
                         if (foundEntry.Count > 0)
                         {

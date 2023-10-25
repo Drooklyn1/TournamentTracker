@@ -475,6 +475,59 @@ namespace TrackerLibrary.Connections.FileProcesses
             return $"{ entry.ID },{ team },{ entry.Score },{ parent }";
         }
 
+        public static void UpdateMatchup(List<string> matchupsData, List<string> matchupEntriesData, Matchup matchup)
+        {
+            // Construct String for the matchup to be updated
+
+            string matchupString;
+
+            matchupString = NewMatchupString(matchup);
+
+            foreach (MatchupEntry entry in matchup.Entries)
+            {
+                matchupString += $"{entry.ID}|";
+
+                // Update current MatchupEntry String in the List<MatchupEntry>
+
+                string foundEntry = matchupEntriesData.First( stringToCheck => entry.ID.ToString() == stringToCheck.Substring( 0, entry.ID.ToString().Length ) );
+
+                int foundEntryIndex = matchupEntriesData.IndexOf(foundEntry);
+
+                if(foundEntryIndex > 0) matchupEntriesData[foundEntryIndex] = NewMatchupEntryString(entry);
+            }
+                    
+            if (matchup.Entries.Count > 0) matchupString = matchupString.Substring(0, matchupString.Length - 1);
+
+            // Update current Matchup String in the List<string>
+
+            string foundMatchup = matchupsData.First(stringToCheck => matchup.ID.ToString() == stringToCheck.Substring(0, matchup.ID.ToString().Length));
+
+            int foundMatchupIndex = matchupsData.IndexOf(foundMatchup);
+
+            if (foundMatchupIndex > 0) matchupsData[foundMatchupIndex] = matchupString;
+
+            // Create or Overwrite the files
+
+            GlobalConfig.MatchupsFile.FullFilePath().WriteFile(matchupsData);
+
+            GlobalConfig.MatchupEntriesFile.FullFilePath().WriteFile(matchupEntriesData);
+        }
+
+        public static void UpdateMatchupEntry(List<string> matchupEntriesData, MatchupEntry entry)
+        {
+            // Update current MatchupEntry String in the List<MatchupEntry>
+
+            string foundEntry = matchupEntriesData.First(stringToCheck => entry.ID.ToString() == stringToCheck.Substring(0, entry.ID.ToString().Length));
+
+            int foundEntryIndex = matchupEntriesData.IndexOf(foundEntry);
+
+            if (foundEntryIndex > 0) matchupEntriesData[foundEntryIndex] = NewMatchupEntryString(entry);
+
+            // Create or Overwrite the file
+
+            GlobalConfig.MatchupEntriesFile.FullFilePath().WriteFile(matchupEntriesData);
+        }
+
         // Getters
 
         private static Prize GetPrizeByID(int id)
