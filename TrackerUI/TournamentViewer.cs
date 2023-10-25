@@ -6,9 +6,9 @@ namespace TrackerUI
     public partial class TournamentViewer : Form
     {
         private Tournament tournament;
-        private List<int> rounds;
-        private List<Matchup> selectedMatchups;
-        private Matchup selectedMatchup;
+        private List<int> rounds = new List<int>();
+        private List<Matchup> selectedMatchups = new List<Matchup>();
+        private Matchup selectedMatchup = new Matchup();
         private int selectedRound;
 
         public TournamentViewer(Tournament loadedTournament)
@@ -96,28 +96,52 @@ namespace TrackerUI
 
         private void PlayMatch()
         {
-            if (selectedMatchup != null)
+            // Capture and save the Scores
+
+            if (selectedMatchup.Entries.Count == 2)
             {
-                // Capture and save the Scores
+                string error = ValidateScore();
 
-                if (selectedMatchup.Entries.Count == 2)
-                { 
-                    if (double.TryParse(teamOneScoreBox.Text, out double scoreOne))
-                        selectedMatchup.Entries[0].Score = scoreOne;
-
-                    if (double.TryParse(teamTwoScoreBox.Text, out double scoreTwo))
-                        selectedMatchup.Entries[1].Score = scoreTwo;
-                }
-
-                try
-                { 
-                    LogicProcessor.UpdateResult(selectedMatchup, tournament); 
-                }
-                catch (Exception e)
+                if (error == "")
                 {
-                    MessageBox.Show(e.Message);
+                    selectedMatchup.Entries[0].Score = int.Parse(teamOneScoreBox.Text);
+                    selectedMatchup.Entries[1].Score = int.Parse(teamTwoScoreBox.Text);
+                }
+                else
+                {
+                    MessageBox.Show(error);
+                    return;
                 }
             }
+
+            try
+            {
+                LogicProcessor.UpdateResult(selectedMatchup, tournament); 
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+            }
+        }
+
+        private string ValidateScore()
+        {
+            string output = "";
+
+            if ( !double.TryParse(teamOneScoreBox.Text, out double scoreOne) )
+            {
+                output = "Please enter a valid score for team 1.";
+            }
+            else if ( !double.TryParse(teamTwoScoreBox.Text, out double scoreTwo) )
+            {
+                output = "Please enter a valid score for team 2.";
+            }
+            else if (scoreOne == scoreTwo)
+            {
+                output = "Ties are not allowed in this tournament.";
+            }
+
+            return output;
         }
 
         private void roundComboBox_SelectedIndexChanged(object sender, EventArgs e)

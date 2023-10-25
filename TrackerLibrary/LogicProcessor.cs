@@ -85,61 +85,68 @@ namespace TrackerLibrary
 
         public static void UpdateResult(Matchup selectedMatchup, Tournament tournament)
         {
-            // If a Team has a Bye, set them as the Winner
-
-            if (selectedMatchup.Entries.Count == 1)
+            if (selectedMatchup != null)
             {
-                if (selectedMatchup.Entries[0].TeamCompeting != null)
-                {
-                    selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-                }
-            }
-            else if (selectedMatchup.Entries.Count == 2)
-            {
-                if (selectedMatchup.Entries[0].TeamCompeting != null && selectedMatchup.Entries[1].TeamCompeting != null)
-                {
-                    // Determine the Winner of the Matchup
+                // If a Team has a Bye, set them as the Winner
 
-                    if (GlobalConfig.WinnerDetermination == ScoreType.Lesser)
+                if (selectedMatchup.Entries.Count == 1)
+                {
+                    if (selectedMatchup.Entries[0].TeamCompeting != null)
                     {
-                        if (selectedMatchup.Entries[0].Score < selectedMatchup.Entries[1].Score)
+                        selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+                    }
+                }
+                else if (selectedMatchup.Entries.Count == 2)
+                {
+                    if (selectedMatchup.Entries[0].TeamCompeting != null && selectedMatchup.Entries[1].TeamCompeting != null)
+                    {
+                        // Determine the Winner of the Matchup
+
+                        if (GlobalConfig.WinnerDetermination == ScoreType.Lesser)
                         {
-                            selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-                        }
-                        else if (selectedMatchup.Entries[1].Score < selectedMatchup.Entries[0].Score)
-                        {
-                            selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
+                            if (selectedMatchup.Entries[0].Score < selectedMatchup.Entries[1].Score)
+                            {
+                                selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+                            }
+                            else if (selectedMatchup.Entries[1].Score < selectedMatchup.Entries[0].Score)
+                            {
+                                selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
+                            }
+                            else
+                            {
+                                throw new Exception("Ties are not allowed in this application.");
+                            }
                         }
                         else
                         {
-                            throw new Exception("Ties are not allowed in this application.");
-                        }
-                    }
-                    else
-                    {
-                        if (selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score)
-                        {
-                            selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-                        }
-                        else if (selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score)
-                        {
-                            selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
-                        }
-                        else
-                        {
-                            throw new Exception("Ties are not allowed in this application.");
+                            if (selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score)
+                            {
+                                selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
+                            }
+                            else if (selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score)
+                            {
+                                selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
+                            }
+                            else
+                            {
+                                throw new Exception("Ties are not allowed in this application.");
+                            }
                         }
                     }
                 }
+
+                GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
+
+                // update TeamCompeting of MatchupEntry in next round with the Winner
+
+                if (selectedMatchup.Winner != null)
+                {
+                    UpdateNextRound(selectedMatchup, tournament);
+                }
             }
-
-            GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
-
-            // update TeamCompeting of MatchupEntry in next round with the Winner
-
-            if (selectedMatchup.Winner != null)
+            else
             {
-                UpdateNextRound(selectedMatchup, tournament);
+                throw new Exception("No matchup selected.");
             }
         }
 
@@ -149,15 +156,26 @@ namespace TrackerLibrary
 
             if (currentRound < tournament.Rounds.Count)
             {
+                // tournament.Rounds[currentRound] is the next round after the current round
+
                 foreach (Matchup m in tournament.Rounds[currentRound])
                 {
                     List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
 
                     if (foundEntry.Count > 0)
                     {
+                        // Update MatchupEntry with the Winner as the team competing
+
                         foundEntry.First().TeamCompeting = selectedMatchup.Winner;
 
                         GlobalConfig.Connection.UpdateMatchupEntry(foundEntry.First());
+
+                        // Reset the Winner and scores in case this was processed before
+
+                        m.Winner = null;
+                        m.Entries.ForEach(x => x.Score = 0);
+
+                        GlobalConfig.Connection.UpdateMatchup(m);
                     }
                 }
             }
