@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TrackerLibrary.Models;
+﻿using TrackerLibrary.Models;
 
 namespace TrackerLibrary.Connections
 {
@@ -16,6 +11,8 @@ namespace TrackerLibrary.Connections
         Person CreatePerson(Person person);
         Team CreateTeam(Team team);
         Tournament CreateTournament(Tournament tournament);
+        void UpdateMatchup(Matchup matchup);
+        void UpdateMatchupEntry(MatchupEntry matchupEntry);
 
     }
 }

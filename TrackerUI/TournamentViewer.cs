@@ -1,3 +1,4 @@
+using TrackerLibrary;
 using TrackerLibrary.Models;
 
 namespace TrackerUI
@@ -44,6 +45,8 @@ namespace TrackerUI
 
         private void LoadMatchups()
         {
+            // Load Matchups of the current round (round 1 -> spot 0 in List<Matchup>)
+
             if (roundCheckBox.Checked)
             {
                 selectedMatchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1].Where(x => x.Winner == null).ToList();
@@ -67,6 +70,8 @@ namespace TrackerUI
 
             if (selectedMatchup != null)
             {
+                // Load the Teams and Scores of the Matchup to the UI
+
                 if (selectedMatchup.Entries.Count > 0)
                 {
                     teamOneLabel.Text = selectedMatchup.Entries[0].DisplayName;
@@ -90,6 +95,8 @@ namespace TrackerUI
         {
             if (selectedMatchup != null)
             {
+                // If a Team has a Bye, set them as the Winner
+
                 if (selectedMatchup.Entries.Count == 1)
                 {
                     if (selectedMatchup.Entries[0].TeamCompeting != null)
@@ -101,11 +108,15 @@ namespace TrackerUI
                 {
                     if (selectedMatchup.Entries[0].TeamCompeting != null && selectedMatchup.Entries[1].TeamCompeting != null)
                     {
+                        // Capture and save the Scores
+
                         if ( double.TryParse( teamOneScoreBox.Text, out double scoreOne ) )
                             selectedMatchup.Entries[0].Score = scoreOne;
 
                         if ( double.TryParse( teamTwoScoreBox.Text, out double scoreTwo ) )
                             selectedMatchup.Entries[1].Score = scoreTwo;
+
+                        // Determine the Winner of the Matchup
 
                         if (selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score)
                         {
@@ -118,13 +129,15 @@ namespace TrackerUI
                     }
                 }
 
+                GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
+
                 UpdateNextRound();
             }
         }
 
         private void UpdateNextRound()
         {
-            // update TeamCompeting of matchup entry in next round with the Winner
+            // update TeamCompeting of MatchupEntry in next round with the Winner
 
             if (selectedMatchup.Winner != null)
             {
@@ -139,6 +152,8 @@ namespace TrackerUI
                         if (foundEntry.Count > 0)
                         {
                             foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+
+                            GlobalConfig.Connection.UpdateMatchupEntry(foundEntry.First());
                         }
                     }
                 }

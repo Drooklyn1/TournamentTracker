@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TrackerLibrary.Models;
+﻿using TrackerLibrary.Models;
 using TrackerLibrary.Connections.FileProcesses;
-using System.Xml;
 
 namespace TrackerLibrary.Connections
 {
@@ -152,5 +146,14 @@ namespace TrackerLibrary.Connections
             return newTournament;
         }
 
+        public void UpdateMatchup(Matchup matchup)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void UpdateMatchupEntry(MatchupEntry matchupEntry)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
