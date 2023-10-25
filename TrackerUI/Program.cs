@@ -17,6 +17,9 @@ namespace TrackerUI
             // Initialize the Database Connections
             GlobalConfig.InitializeConnections(DatabaseType.FILES);
 
+            // Initialize the Score Type for the Winner determination
+            GlobalConfig.InitializeWinnerDetermination(ScoreType.Greater);
+
             Application.Run(new TournamentDashboard());
             //Application.Run(new TournamentViewer());
             //Application.Run(new TournamentCreator());

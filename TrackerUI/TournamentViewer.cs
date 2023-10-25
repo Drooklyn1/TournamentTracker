@@ -9,6 +9,7 @@ namespace TrackerUI
         private List<int> rounds;
         private List<Matchup> selectedMatchups;
         private Matchup selectedMatchup;
+        private int selectedRound;
 
         public TournamentViewer(Tournament loadedTournament)
         {
@@ -47,13 +48,15 @@ namespace TrackerUI
         {
             // Load Matchups of the current round (round 1 -> spot 0 in List<Matchup>)
 
+            selectedRound = (int)roundComboBox.SelectedItem;
+
             if (roundCheckBox.Checked)
             {
-                selectedMatchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1].Where(x => x.Winner == null).ToList();
+                selectedMatchups = tournament.Rounds[selectedRound - 1].Where(x => x.Winner == null).ToList();
             }
             else
             {
-                selectedMatchups = tournament.Rounds[(int)roundComboBox.SelectedItem - 1];
+                selectedMatchups = tournament.Rounds[selectedRound - 1];
             }
         }
 
@@ -95,67 +98,24 @@ namespace TrackerUI
         {
             if (selectedMatchup != null)
             {
-                // If a Team has a Bye, set them as the Winner
+                // Capture and save the Scores
 
-                if (selectedMatchup.Entries.Count == 1)
-                {
-                    if (selectedMatchup.Entries[0].TeamCompeting != null)
-                    {
-                        selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-                    }
-                }
-                else if (selectedMatchup.Entries.Count == 2)
-                {
-                    if (selectedMatchup.Entries[0].TeamCompeting != null && selectedMatchup.Entries[1].TeamCompeting != null)
-                    {
-                        // Capture and save the Scores
+                if (selectedMatchup.Entries.Count == 2)
+                { 
+                    if (double.TryParse(teamOneScoreBox.Text, out double scoreOne))
+                        selectedMatchup.Entries[0].Score = scoreOne;
 
-                        if ( double.TryParse( teamOneScoreBox.Text, out double scoreOne ) )
-                            selectedMatchup.Entries[0].Score = scoreOne;
-
-                        if ( double.TryParse( teamTwoScoreBox.Text, out double scoreTwo ) )
-                            selectedMatchup.Entries[1].Score = scoreTwo;
-
-                        // Determine the Winner of the Matchup
-
-                        if (selectedMatchup.Entries[0].Score > selectedMatchup.Entries[1].Score)
-                        {
-                            selectedMatchup.Winner = selectedMatchup.Entries[0].TeamCompeting;
-                        }
-                        else if (selectedMatchup.Entries[1].Score > selectedMatchup.Entries[0].Score)
-                        {
-                            selectedMatchup.Winner = selectedMatchup.Entries[1].TeamCompeting;
-                        }
-                    }
+                    if (double.TryParse(teamTwoScoreBox.Text, out double scoreTwo))
+                        selectedMatchup.Entries[1].Score = scoreTwo;
                 }
 
-                GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
-
-                UpdateNextRound();
-            }
-        }
-
-        private void UpdateNextRound()
-        {
-            // update TeamCompeting of MatchupEntry in next round with the Winner
-
-            if (selectedMatchup.Winner != null)
-            {
-                int selectedRound = (int)roundComboBox.SelectedItem;
-
-                if (selectedRound < tournament.Rounds.Count)
+                try
+                { 
+                    LogicProcessor.UpdateResult(selectedMatchup, tournament); 
+                }
+                catch (Exception e)
                 {
-                    foreach (Matchup m in tournament.Rounds[selectedRound])
-                    {
-                        List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
-
-                        if (foundEntry.Count > 0)
-                        {
-                            foundEntry.First().TeamCompeting = selectedMatchup.Winner;
-
-                            GlobalConfig.Connection.UpdateMatchupEntry(foundEntry.First());
-                        }
-                    }
+                    MessageBox.Show(e.Message);
                 }
             }
         }

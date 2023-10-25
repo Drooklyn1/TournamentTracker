@@ -110,6 +110,9 @@ namespace TrackerUI
 
                 callingRequestor.TournamentCompleted(newTournament);
 
+                TournamentViewer tvForm = new TournamentViewer(newTournament);
+                tvForm.Show();
+
                 this.Close();
             }
             else

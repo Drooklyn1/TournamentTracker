@@ -147,7 +147,7 @@ namespace TrackerUI
                 output = false;
             }
 
-            if (teamMembers.Count > 0)
+            if ( !(teamMembers.Count > 0) )
             {
                 output = false;
             }
