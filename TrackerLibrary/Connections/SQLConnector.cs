@@ -146,7 +146,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newPrize"></param>
         /// <returns>Prize details with unique identifier</returns>
-        public Prize CreatePrize(Prize newPrize)
+        public void CreatePrize(Prize newPrize)
         {
             using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
@@ -162,8 +162,6 @@ namespace TrackerLibrary.Connections
 
                 newPrize.ID = p.Get<int>("@id");
             }
-
-            return newPrize;
         }
 
         /// <summary>
@@ -171,7 +169,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newPerson"></param>
         /// <returns>Person details with unique identifier</returns>
-        public Person CreatePerson(Person newPerson)
+        public void CreatePerson(Person newPerson)
         {
             using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
@@ -187,8 +185,6 @@ namespace TrackerLibrary.Connections
 
                 newPerson.ID = p.Get<int>("@id");
             }
-
-            return newPerson;
         }
 
         /// <summary>
@@ -196,7 +192,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newTeam"></param>
         /// <returns>Team details with unique identifier</returns>
-        public Team CreateTeam(Team newTeam)
+        public void CreateTeam(Team newTeam)
         {
             using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
@@ -219,8 +215,6 @@ namespace TrackerLibrary.Connections
                     dbConnection.Execute("dbo.spTeamMembers_Insert", p, commandType: CommandType.StoredProcedure);
                 }
             }
-
-            return newTeam;
         }
 
         /// <summary>
@@ -228,7 +222,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newTournament"></param>
         /// <returns>Team details with unique identifier</returns>
-        public Tournament CreateTournament(Tournament newTournament)
+        public void CreateTournament(Tournament newTournament)
         {
             using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
@@ -240,8 +234,6 @@ namespace TrackerLibrary.Connections
 
                 SaveTournamentRounds(dbConnection, newTournament);
             }
-
-            return newTournament;
         }
 
         private void SaveNewTournament(IDbConnection dbConnection, Tournament newTournament)

@@ -7,10 +7,10 @@ namespace TrackerLibrary.Connections
         List<Person> GetAllPersons();
         List<Team> GetAllTeams();
         List<Tournament> GetAllTournaments();
-        Prize CreatePrize(Prize prize);
-        Person CreatePerson(Person person);
-        Team CreateTeam(Team team);
-        Tournament CreateTournament(Tournament tournament);
+        void CreatePrize(Prize prize);
+        void CreatePerson(Person person);
+        void CreateTeam(Team team);
+        void CreateTournament(Tournament tournament);
         void UpdateMatchup(Matchup matchup);
         void UpdateMatchupEntry(MatchupEntry matchupEntry);
 

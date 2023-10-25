@@ -1,6 +1,5 @@
 ﻿using TrackerLibrary.Models;
 using TrackerLibrary.Connections.FileProcesses;
-using System.Text.RegularExpressions;
 
 namespace TrackerLibrary.Connections
 {
@@ -44,7 +43,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newPrize"></param>
         /// <returns>Prize details with unique identifier</returns>
-        public Prize CreatePrize(Prize newPrize)
+        public void CreatePrize(Prize newPrize)
         {
             List<string> prizesData = GlobalConfig.PrizesFile.FullFilePath().LoadFile();
             List<Prize> prizes = prizesData.ConvertToPrizes();
@@ -60,8 +59,6 @@ namespace TrackerLibrary.Connections
             prizes.Add(newPrize);
 
             GlobalConfig.PrizesFile.FullFilePath().SavePrizes(prizesData, newPrize);
-
-            return newPrize;
         }
 
         /// <summary>
@@ -69,7 +66,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newPerson"></param>
         /// <returns>Person details with unique identifier</returns>
-        public Person CreatePerson(Person newPerson)
+        public void CreatePerson(Person newPerson)
         {
             List<string> personsData = GlobalConfig.PersonsFile.FullFilePath().LoadFile();
             List<Person> persons = personsData.ConvertToPersons();
@@ -85,8 +82,6 @@ namespace TrackerLibrary.Connections
             persons.Add(newPerson);
 
             GlobalConfig.PersonsFile.FullFilePath().SavePersons(personsData, newPerson);
-
-            return newPerson;
         }
 
         /// <summary>
@@ -94,7 +89,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newTeam"></param>
         /// <returns>Team details with unique identifier</returns>
-        public Team CreateTeam(Team newTeam)
+        public void CreateTeam(Team newTeam)
         {
             List<string> teamsData = GlobalConfig.TeamsFile.FullFilePath().LoadFile();
             List<Team> teams = teamsData.ConvertToTeams();
@@ -110,8 +105,6 @@ namespace TrackerLibrary.Connections
             teams.Add(newTeam);
 
             GlobalConfig.TeamsFile.FullFilePath().SaveTeams(teamsData, newTeam);
-
-            return newTeam;
         }
 
         /// <summary>
@@ -119,7 +112,7 @@ namespace TrackerLibrary.Connections
         /// </summary>
         /// <param name="newTournament"></param>
         /// <returns>Tournament details with unique identifier</returns>
-        public Tournament CreateTournament(Tournament newTournament)
+        public void CreateTournament(Tournament newTournament)
         {
             List<string> matchupsData = GlobalConfig.MatchupsFile.FullFilePath().LoadFile();
             List<string> matchupEntriesData = GlobalConfig.MatchupEntriesFile.FullFilePath().LoadFile();
@@ -143,8 +136,6 @@ namespace TrackerLibrary.Connections
             FileProcessor.SaveMatchups(matchupsData, matchupEntriesData, newTournament);
 
             GlobalConfig.TournamentsFile.FullFilePath().SaveTournaments(tournamentsData, newTournament);
-
-            return newTournament;
         }
 
         public void UpdateMatchup(Matchup matchup)
