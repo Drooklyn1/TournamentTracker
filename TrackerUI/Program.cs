@@ -18,13 +18,12 @@ namespace TrackerUI
             GlobalConfig.InitializeConnections(DatabaseType.FILES);
 
             // Initialize the Score Type for the Winner determination
-            GlobalConfig.InitializeWinnerDetermination(ScoreType.Greater);
+            GlobalConfig.InitializeWinnerDetermination();
+
+            // Initialize User's Email-address, where Emails are sent from
+            GlobalConfig.InitializeUser();
 
             Application.Run(new TournamentDashboard());
-            //Application.Run(new TournamentViewer());
-            //Application.Run(new TournamentCreator());
-            //Application.Run(new TeamCreator());
-            //Application.Run(new PrizeCreator());
         }
     }
 }

@@ -13,7 +13,6 @@ namespace TrackerLibrary
         public const string MatchupEntriesFile = "MatchupEntriesFile.csv";
 
         public static IDataConnection Connection { get; private set; }
-        public static ScoreType WinnerDetermination { get; private set; }
 
         public static void InitializeConnections(DatabaseType dbType)
         {
@@ -30,12 +29,17 @@ namespace TrackerLibrary
             }
         }
 
-        public static void InitializeWinnerDetermination(ScoreType scoreType)
+        public static string WinnerDetermination()
         {
-            WinnerDetermination = scoreType;
+            return ConfigurationManager.AppSettings["winnerDetermination"];
         }
 
-        public static string ConnectionString(string dbName) 
+        public static string UserEmail()
+        {
+            return ConfigurationManager.AppSettings["userEmail"];
+        }
+
+        public static string ConnectionString(string dbName)
         {
             return ConfigurationManager.ConnectionStrings[dbName].ConnectionString;
         }

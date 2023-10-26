@@ -1,8 +1,10 @@
-﻿using TrackerLibrary.Models;
+﻿using System.Security.Cryptography;
+using System.Text;
+using TrackerLibrary.Models;
 
 namespace TrackerLibrary
 {
-    public static class LogicProcessor
+    public static class TournamentLogic
     {
         public static void CreateRounds(Tournament newTournament)
         {
@@ -102,7 +104,7 @@ namespace TrackerLibrary
                     {
                         // Determine the Winner of the Matchup
 
-                        if (GlobalConfig.WinnerDetermination == ScoreType.Lesser)
+                        if (GlobalConfig.WinnerDetermination() == "Lesser")
                         {
                             if (selectedMatchup.Entries[0].Score < selectedMatchup.Entries[1].Score)
                             {
@@ -151,20 +153,87 @@ namespace TrackerLibrary
 
                 // Find out if all matchups are played in the current round
 
-                int currentRoundInList = selectedMatchup.Round - 1;
+                int currentRound = selectedMatchup.Round;
 
-                bool unplayedMatchesInRound = tournament.Rounds[currentRoundInList].Any(x => x.Winner == null);
+                bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
 
                 if (!unplayedMatchesInRound)
                 {
-                    // TODO - send Email
-                }
+                    // Send Email as round is complete
 
+                    if (currentRound < tournament.Rounds.Count)
+                    {
+                        NextRoundAlert(currentRound, tournament);
+                    }
+                    else 
+                    { 
+                        // Notify all of Winner of the Tournament
+                    }
+                }
             }
             else
             {
                 throw new Exception("No matchup selected.");
             }
+        }
+
+        private static void NextRoundAlert(int currentRound, Tournament tournament)
+        {
+            // Notify all Persons in the next round by Email
+
+            foreach (Matchup m in tournament.Rounds[currentRound])
+            {
+                foreach (MatchupEntry e in m.Entries)
+                {
+                    foreach (Person p in e.TeamCompeting.TeamMembers)
+                    {
+                        EmailUserNewRound(p, e.TeamCompeting.TeamName, m.Entries.Where(x => x.TeamCompeting != e.TeamCompeting).FirstOrDefault());
+                    }
+                }
+            }
+        }
+
+        private static void EmailUserNewRound(Person p, string teamName, MatchupEntry opponent)
+        {
+            if(p.Email.Length == 0)
+            {
+                return;
+            }
+
+            string from = GlobalConfig.UserEmail();
+            List<string> to = new List<string>();
+            string subject = "";
+            StringBuilder body = new StringBuilder();
+
+            to.Add(p.Email);
+
+            if (opponent != null)
+            {
+                subject = $"Your team { teamName } has a new matchup with { opponent.TeamCompeting.TeamName }";
+
+                body.AppendLine($"<h1>Your Team {teamName} has a new matchup</h1>");
+                body.AppendLine();
+                body.Append($"<strong>Opponent: </strong>");
+                body.AppendLine(opponent.TeamCompeting.TeamName);
+                body.AppendLine();
+                body.AppendLine();
+                body.AppendLine("Good luck!");
+                body.AppendLine();
+                body.AppendLine("~TournamentTracker");
+            }
+            else
+            {
+                subject = $"Your team { teamName } has a bye this round.";
+
+                body.AppendLine($"<h1>Your Team {teamName} has a bye this round</h1>");
+                body.AppendLine();
+                body.AppendLine();
+                body.AppendLine("Enjoy your week off!");
+                body.AppendLine();
+                body.AppendLine("~TournamentTracker");
+            }
+
+            EmailLogic.SendEmail(from, to, subject, body.ToString());
         }
 
         private static void UpdateNextRound(Matchup selectedMatchup, Tournament tournament)

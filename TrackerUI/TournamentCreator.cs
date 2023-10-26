@@ -104,7 +104,7 @@ namespace TrackerUI
             {
                 Tournament newTournament = new Tournament(tournamentNameBox.Text, decimal.Parse(entryFeeBox.Text), tournamentTeams, tournamentPrizes);
 
-                LogicProcessor.CreateRounds(newTournament);
+                TournamentLogic.CreateRounds(newTournament);
 
                 GlobalConfig.Connection.CreateTournament(newTournament);
 

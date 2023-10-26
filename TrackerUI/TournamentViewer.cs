@@ -116,13 +116,13 @@ namespace TrackerUI
             }
 
             MessageBoxButtons buttons = MessageBoxButtons.YesNo;
-            DialogResult result = MessageBox.Show("All connected matchups in subsequent rounds will be reset.", "Play the Match?", buttons);
+            DialogResult result = MessageBox.Show("All connected matchups in subsequent rounds will be reset.\r\n\r\nA new Email will be sent to all participants if the round is complete.", "Play the Match?", buttons);
             
             if (result == DialogResult.Yes)
             {
                 try
                 {
-                    LogicProcessor.UpdateResult(selectedMatchup, tournament);
+                    TournamentLogic.UpdateResult(selectedMatchup, tournament);
                 }
                 catch (Exception e)
                 {

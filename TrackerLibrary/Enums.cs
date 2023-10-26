@@ -6,10 +6,4 @@
         FILES
     }
 
-    public enum ScoreType
-    {
-        Greater,
-        Lesser
-    }
-
 }
