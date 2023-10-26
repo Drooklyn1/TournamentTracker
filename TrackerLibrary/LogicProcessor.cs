@@ -133,16 +133,21 @@ namespace TrackerLibrary
                             }
                         }
                     }
+                    else
+                    {
+                        throw new Exception("At least one of the competing teams is not determined yet.");
+                    }
+                }
+                else
+                {
+                    throw new Exception("The selected matchup has no valid entries.");
                 }
 
                 GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
 
                 // update TeamCompeting of MatchupEntry in next round with the Winner
 
-                if (selectedMatchup.Winner != null)
-                {
-                    UpdateNextRound(selectedMatchup, tournament);
-                }
+                UpdateNextRound(selectedMatchup, tournament);
             }
             else
             {
@@ -154,21 +159,28 @@ namespace TrackerLibrary
         {
             int currentRound = selectedMatchup.Round;
 
+            // Update the next round MatchupEntry with the Winner as TeamCompeting, if there is another round to play
+
             if (currentRound < tournament.Rounds.Count)
             {
-                // tournament.Rounds[currentRound] is the next round after the current round
-
                 foreach (Matchup m in tournament.Rounds[currentRound])
                 {
                     List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
 
                     if (foundEntry.Count > 0)
                     {
-                        // Update MatchupEntry with the Winner as the team competing
+                        // If current Matchup doesn't have a winner, there's no team competing here
 
-                        foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                        if (selectedMatchup.Winner != null)
+                        {
+                            foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                        }
+                        else
+                        {
+                            foundEntry.First().TeamCompeting = null;
+                        }
 
-                        GlobalConfig.Connection.UpdateMatchupEntry(foundEntry.First());
+                        GlobalConfig.Connection.UpdateTeamCompeting(foundEntry.First());
 
                         // Reset the Winner and scores in case this was processed before
 
@@ -176,6 +188,10 @@ namespace TrackerLibrary
                         m.Entries.ForEach(x => x.Score = 0);
 
                         GlobalConfig.Connection.UpdateMatchup(m);
+
+                        // Run it again for the next round after this, so the relevant result is also reset
+
+                        UpdateNextRound(m, tournament);
                     }
                 }
             }

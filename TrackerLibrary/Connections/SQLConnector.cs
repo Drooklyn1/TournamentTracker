@@ -341,7 +341,7 @@ namespace TrackerLibrary.Connections
             }
         }
 
-        public void UpdateMatchupEntry(MatchupEntry matchupEntry)
+        public void UpdateTeamCompeting(MatchupEntry matchupEntry)
         {
             using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {

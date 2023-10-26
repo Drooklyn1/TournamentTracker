@@ -128,7 +128,11 @@ namespace TrackerUI
         {
             string output = "";
 
-            if ( !double.TryParse(teamOneScoreBox.Text, out double scoreOne) )
+            if (selectedMatchup.Entries[0].TeamCompeting == null || selectedMatchup.Entries[1].TeamCompeting == null)
+            {
+                output = "One of the teams competing is not determind yet";
+            }
+            else if ( !double.TryParse(teamOneScoreBox.Text, out double scoreOne) )
             {
                 output = "Please enter a valid score for team 1.";
             }

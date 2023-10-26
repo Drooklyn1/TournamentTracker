@@ -149,7 +149,7 @@ namespace TrackerLibrary.Connections
             }
         }
 
-        public void UpdateMatchupEntry(MatchupEntry matchupEntry)
+        public void UpdateTeamCompeting(MatchupEntry matchupEntry)
         {
             List<string> matchupEntriesData = GlobalConfig.MatchupEntriesFile.FullFilePath().LoadFile();
 

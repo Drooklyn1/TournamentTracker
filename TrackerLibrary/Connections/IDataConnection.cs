@@ -12,7 +12,7 @@ namespace TrackerLibrary.Connections
         void CreateTeam(Team team);
         void CreateTournament(Tournament tournament);
         void UpdateMatchup(Matchup matchup);
-        void UpdateMatchupEntry(MatchupEntry matchupEntry);
+        void UpdateTeamCompeting(MatchupEntry matchupEntry);
 
     }
 }
