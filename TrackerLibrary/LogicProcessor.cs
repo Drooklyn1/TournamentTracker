@@ -200,8 +200,6 @@ namespace TrackerLibrary
                 return;
             }
 
-            string fromEmail = GlobalConfig.UserEmail();
-            string fromName = GlobalConfig.UserName();
             List<string> to = new List<string>();
             string subject;
             StringBuilder body = new StringBuilder();
@@ -234,7 +232,7 @@ namespace TrackerLibrary
                 body.AppendLine("~TournamentTracker");
             }
 
-            EmailLogic.SendEmail(fromEmail, fromName, to, subject, body.ToString());
+            EmailLogic.SendEmail(to, subject, body.ToString());
         }
 
         private static void UpdateNextRound(Matchup selectedMatchup, Tournament tournament)

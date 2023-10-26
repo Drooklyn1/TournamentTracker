@@ -39,9 +39,24 @@ namespace TrackerLibrary
             return ConfigurationManager.AppSettings["userEmail"];
         }
 
+        public static string UserKey()
+        {
+            return ConfigurationManager.AppSettings["userKey"];
+        }
+
         public static string UserName()
         {
             return ConfigurationManager.AppSettings["userName"];
+        }
+
+        public static string EmailHost()
+        {
+            return ConfigurationManager.AppSettings["emailHost"];
+        }
+
+        public static int EmailPort()
+        {
+            return int.Parse(ConfigurationManager.AppSettings["emailPort"]);
         }
 
         public static string ConnectionString(string dbName)

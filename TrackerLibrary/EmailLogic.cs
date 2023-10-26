@@ -5,11 +5,11 @@ namespace TrackerLibrary
 {
     public static class EmailLogic
     {
-        public static void SendEmail(string fromEmail, string fromName, List<string> to, string subject, string body) 
+        public static void SendEmail(List<string> to, string subject, string body) 
         {
             MailMessage message = new MailMessage();
 
-            MailAddress fromAddress = new MailAddress(fromEmail, fromName);
+            MailAddress fromAddress = new MailAddress(GlobalConfig.UserEmail(), GlobalConfig.UserName());
 
             to.ForEach( toEmail => message.To.Add(toEmail) );
 
@@ -20,11 +20,12 @@ namespace TrackerLibrary
 
             SmtpClient smtpClient = new SmtpClient();
 
-            smtpClient.Host = "smtp.gmail.com";
-            smtpClient.Port = 587;
+            smtpClient.Host = GlobalConfig.EmailHost();
+            smtpClient.Port = GlobalConfig.EmailPort();
             smtpClient.UseDefaultCredentials = false;
-            smtpClient.Credentials = new NetworkCredential("f.dreiling@gmail.com", "yqexozstxtgjthvp");
+            smtpClient.Credentials = new NetworkCredential(GlobalConfig.UserEmail(), GlobalConfig.UserKey());
             smtpClient.EnableSsl = true;
+            smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
 
             smtpClient.Send(message);
         }
