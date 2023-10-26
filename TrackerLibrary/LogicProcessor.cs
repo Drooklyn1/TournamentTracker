@@ -145,9 +145,21 @@ namespace TrackerLibrary
 
                 GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
 
-                // update TeamCompeting of MatchupEntry in next round with the Winner
+                // Update TeamCompeting of MatchupEntry in next round with the Winner and reset subsequent rounds
 
                 UpdateNextRound(selectedMatchup, tournament);
+
+                // Find out if all matchups are played in the current round
+
+                int currentRoundInList = selectedMatchup.Round - 1;
+
+                bool unplayedMatchesInRound = tournament.Rounds[currentRoundInList].Any(x => x.Winner == null);
+
+                if (!unplayedMatchesInRound)
+                {
+                    // TODO - send Email
+                }
+
             }
             else
             {

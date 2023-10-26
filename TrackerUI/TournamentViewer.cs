@@ -1,3 +1,4 @@
+using System.Windows.Forms;
 using TrackerLibrary;
 using TrackerLibrary.Models;
 
@@ -109,18 +110,24 @@ namespace TrackerUI
                 }
                 else
                 {
-                    MessageBox.Show(error);
+                    MessageBox.Show(error, "Input Error");
                     return;
                 }
             }
 
-            try
+            MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+            DialogResult result = MessageBox.Show("All connected matchups in subsequent rounds will be reset.", "Play the Match?", buttons);
+            
+            if (result == DialogResult.Yes)
             {
-                LogicProcessor.UpdateResult(selectedMatchup, tournament); 
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message);
+                try
+                {
+                    LogicProcessor.UpdateResult(selectedMatchup, tournament);
+                }
+                catch (Exception e)
+                {
+                    MessageBox.Show(e.Message, "System Error");
+                }
             }
         }
 
