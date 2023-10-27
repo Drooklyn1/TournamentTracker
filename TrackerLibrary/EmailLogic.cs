@@ -22,31 +22,74 @@ namespace TrackerLibrary
 
             if (opponent != "")
             {
-                subject = $"Your team {teamName} has a new matchup with {opponent}";
+                subject = $"{teamName} has a new matchup with {opponent}";
 
-                body.AppendLine($"<h1>Your Team {teamName} has a new matchup</h1>\n");
-                body.AppendLine("\n");
+                body.AppendLine($"<h1>Your Team {teamName} has a new matchup</h1>\r\n");
+                body.AppendLine("\r\n");
                 body.Append($"<strong>Opponent: </strong>");
-                body.AppendLine(opponent + "\n");
-                body.AppendLine("\n");
-                body.AppendLine("\n");
-                body.AppendLine("Good luck!\n");
-                body.AppendLine("\n");
+                body.AppendLine(opponent + "\r\n");
+                body.AppendLine("\r\n");
+                body.AppendLine("\r\n");
+                body.AppendLine("Good luck!\r\n");
+                body.AppendLine("\r\n");
                 body.AppendLine("~TournamentTracker");
             }
             else
             {
-                subject = $"Your team {teamName} has a bye this round.";
+                subject = $"{teamName} has a bye this round";
 
-                body.AppendLine($"<h1>Your Team {teamName} has a bye this round</h1>\n");
-                body.AppendLine("\n");
-                body.AppendLine("\n");
-                body.AppendLine("Enjoy the week off!\n");
-                body.AppendLine("\n");
+                body.AppendLine($"<h1>Your Team {teamName} has a bye this round</h1>\r\n");
+                body.AppendLine("\r\n");
+                body.AppendLine("\r\n");
+                body.AppendLine("Enjoy the week off!\r\n");
+                body.AppendLine("\r\n");
                 body.AppendLine("~TournamentTracker");
             }
 
-            SendEmail(to, subject, body.ToString());
+            try
+            {
+                SendEmail(to, subject, body.ToString());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+
+        }
+
+        public static void EmailUserTournamentFinished(Person p, string teamName, string winner)
+        {
+            if (p.Email.Length == 0)
+            {
+                return;
+            }
+
+            List<string> to = new List<string>();
+            string subject;
+            StringBuilder body = new StringBuilder();
+
+            to.Add(p.Email);
+
+            subject = $"The tournament is over, we have a Winner!";
+
+            body.AppendLine($"<h1>The tournament is complete, thank you for participating with your team {teamName} !</h1>\n");
+            body.AppendLine("\n");
+            body.Append($"<strong>The Winner is: </strong>");
+            body.AppendLine(winner + "\n");
+            body.AppendLine("\n");
+            body.AppendLine("\n");
+            body.AppendLine("Until next time!\n");
+            body.AppendLine("\n");
+            body.AppendLine("~TournamentTracker");
+
+            try
+            {
+                SendEmail(to, subject, body.ToString());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public static void SendEmail(List<string> to, string subject, string body) 
@@ -71,7 +114,14 @@ namespace TrackerLibrary
             smtpClient.EnableSsl = true;
             smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
 
-            smtpClient.Send(message);
+            try
+            {
+                smtpClient.Send(message);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
     }

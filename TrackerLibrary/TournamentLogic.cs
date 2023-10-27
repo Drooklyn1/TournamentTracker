@@ -149,28 +149,14 @@ namespace TrackerLibrary
 
                 // Update TeamCompeting of MatchupEntry in next round with the Winner and reset subsequent rounds
 
-                UpdateNextRound(selectedMatchup, tournament);
-
-                // Find out if all matchups are played in the current round
-
-                /*int currentRound = selectedMatchup.Round;
-
-                bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
-
-                if (!unplayedMatchesInRound)
+                try
                 {
-                    // Send Email as round is complete
-
-                    if (currentRound < tournament.Rounds.Count)
-                    {
-                        NewRoundAlert(currentRound, tournament);
-                    }
-                    else 
-                    { 
-                        // TODO - Notify all of Winner of the Tournament
-
-                    }
-                }*/
+                    UpdateNextRound(selectedMatchup, tournament);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
             }
             else
             {
@@ -180,7 +166,10 @@ namespace TrackerLibrary
 
         private static void UpdateNextRound(Matchup selectedMatchup, Tournament tournament)
         {
+            // Get the round we were working on and if there's still matches left to play
+
             int currentRound = selectedMatchup.Round;
+            bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
 
             // Update the next round MatchupEntry with the Winner as TeamCompeting, if there is another round to play
 
@@ -214,31 +203,53 @@ namespace TrackerLibrary
 
                         // Run it again for the next round after this, so the relevant result is also reset
 
-                        UpdateNextRound(m, tournament);
+                        try
+                        {
+                            UpdateNextRound(m, tournament);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
                     }
 
-                    // If all matches were played in the current round, notify all users in the next round
+                    // If all matches were played in the round of "selectedMatchup", notify each user in the next round
 
-                    bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
-
-                    if ( !unplayedMatchesInRound ) NewRoundAlert(m);
+                    if (!unplayedMatchesInRound)
+                    {
+                        try
+                        { 
+                            NewRoundAlert(m);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
+                    }
                 }
             }
 
-            // If there's no more round to play then tournament is complete
+            // If there's no more round AND no more match to play then tournament is complete
 
             else
             {
-                if (selectedMatchup.Winner != null)
+                if ( !unplayedMatchesInRound )
                 {
-
+                    try
+                    { 
+                        TournamentFinishedAlert(tournament);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
                 }
             }
         }
 
         private static void NewRoundAlert(Matchup m)
         {
-            // Notify all Persons in the next round by Email. Pass in zero as current round when Tournament is created.
+            // Notify all Persons in the next round by Email
 
             foreach (MatchupEntry e in m.Entries)
             {
@@ -251,19 +262,61 @@ namespace TrackerLibrary
 
                         if (oppEntry != null) opponent = oppEntry.DisplayName;
 
-                        EmailLogic.EmailUserNewRound(p, e.TeamCompeting.TeamName, opponent);
+                        try
+                        {
+                            EmailLogic.EmailUserNewRound(p, e.TeamCompeting.TeamName, opponent);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
                     }
                 }
             }
         }
 
-        public static void FirstRoundAlert(int currentRound, Tournament tournament)
+        private static void TournamentFinishedAlert(Tournament tournament)
         {
-            // Notify all Persons in the next round by Email. Pass in zero as current round when Tournament is created.
+            // Notify all Participants (Persons from the first round matchups)
 
-            foreach (Matchup m in tournament.Rounds[currentRound])
+            foreach (Matchup m in tournament.Rounds[0])
             {
-                NewRoundAlert(m);
+                foreach (MatchupEntry e in m.Entries)
+                {
+                    if (e.TeamCompeting != null)
+                    {
+                        foreach (Person p in e.TeamCompeting.TeamMembers)
+                        {
+                            string winner = tournament.Rounds[tournament.Rounds.Count - 1].FirstOrDefault().Winner.TeamName;
+
+                            try
+                            {
+                                EmailLogic.EmailUserTournamentFinished(p, e.TeamCompeting.TeamName, winner);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new Exception(ex.Message);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public static void FirstRoundAlert(Tournament tournament)
+        {
+            // Notify all Persons in the first round after Tournament is created
+
+            foreach (Matchup m in tournament.Rounds[0])
+            {
+                try
+                { 
+                    NewRoundAlert(m);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System.Configuration;
+using System.Data;
 using TrackerLibrary.Connections;
 
 namespace TrackerLibrary
@@ -13,6 +14,22 @@ namespace TrackerLibrary
         public const string MatchupEntriesFile = "MatchupEntriesFile.csv";
 
         public static IDataConnection Connection { get; private set; }
+
+        public static void InitializeConnections()
+        {
+            string dbType = ConfigurationManager.AppSettings["dataStorage"];
+            switch (dbType)
+            {
+                case "SQL":
+                    Connection = new SQLConnector();
+                    break;
+                case "FILES":
+                    Connection = new FileConnector();
+                    break;
+                default:
+                    break;
+            }
+        }
 
         public static void InitializeConnections(DatabaseType dbType)
         {

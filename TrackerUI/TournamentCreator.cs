@@ -114,7 +114,14 @@ namespace TrackerUI
                 callingRequestor.TournamentCompleted(newTournament);
 
                 // Email all users
-                TournamentLogic.FirstRoundAlert(0, newTournament);
+                try
+                {
+                    TournamentLogic.FirstRoundAlert(newTournament);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "System Error");
+                }
 
                 TournamentViewer tvForm = new TournamentViewer(newTournament);
                 tvForm.Show();
