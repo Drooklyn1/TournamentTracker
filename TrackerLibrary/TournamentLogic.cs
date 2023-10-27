@@ -153,7 +153,7 @@ namespace TrackerLibrary
 
                 // Find out if all matchups are played in the current round
 
-                int currentRound = selectedMatchup.Round;
+                /*int currentRound = selectedMatchup.Round;
 
                 bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
 
@@ -163,76 +163,19 @@ namespace TrackerLibrary
 
                     if (currentRound < tournament.Rounds.Count)
                     {
-                        NextRoundAlert(currentRound, tournament);
+                        NewRoundAlert(currentRound, tournament);
                     }
                     else 
                     { 
-                        // Notify all of Winner of the Tournament
+                        // TODO - Notify all of Winner of the Tournament
+
                     }
-                }
+                }*/
             }
             else
             {
                 throw new Exception("No matchup selected.");
             }
-        }
-
-        private static void NextRoundAlert(int currentRound, Tournament tournament)
-        {
-            // Notify all Persons in the next round by Email
-
-            foreach (Matchup m in tournament.Rounds[currentRound])
-            {
-                foreach (MatchupEntry e in m.Entries)
-                {
-                    foreach (Person p in e.TeamCompeting.TeamMembers)
-                    {
-                        EmailUserNewRound(p, e.TeamCompeting.TeamName, m.Entries.Where(x => x.TeamCompeting != e.TeamCompeting).FirstOrDefault());
-                    }
-                }
-            }
-        }
-
-        private static void EmailUserNewRound(Person p, string teamName, MatchupEntry opponent)
-        {
-            if(p.Email.Length == 0)
-            {
-                return;
-            }
-
-            List<string> to = new List<string>();
-            string subject;
-            StringBuilder body = new StringBuilder();
-
-            to.Add(p.Email);
-
-            if (opponent != null)
-            {
-                subject = $"Your team { teamName } has a new matchup with { opponent.TeamCompeting.TeamName }";
-
-                body.AppendLine($"<h1>Your Team {teamName} has a new matchup</h1>");
-                body.AppendLine();
-                body.Append($"<strong>Opponent: </strong>");
-                body.AppendLine(opponent.TeamCompeting.TeamName);
-                body.AppendLine();
-                body.AppendLine();
-                body.AppendLine("Good luck!");
-                body.AppendLine();
-                body.AppendLine("~TournamentTracker");
-            }
-            else
-            {
-                subject = $"Your team { teamName } has a bye this round.";
-
-                body.AppendLine($"<h1>Your Team {teamName} has a bye this round</h1>");
-                body.AppendLine();
-                body.AppendLine();
-                body.AppendLine("Enjoy your week off!");
-                body.AppendLine();
-                body.AppendLine("~TournamentTracker");
-            }
-
-            EmailLogic.SendEmail(to, subject, body.ToString());
         }
 
         private static void UpdateNextRound(Matchup selectedMatchup, Tournament tournament)
@@ -273,7 +216,54 @@ namespace TrackerLibrary
 
                         UpdateNextRound(m, tournament);
                     }
+
+                    // If all matches were played in the current round, notify all users in the next round
+
+                    bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
+
+                    if ( !unplayedMatchesInRound ) NewRoundAlert(m);
                 }
+            }
+
+            // If there's no more round to play then tournament is complete
+
+            else
+            {
+                if (selectedMatchup.Winner != null)
+                {
+
+                }
+            }
+        }
+
+        private static void NewRoundAlert(Matchup m)
+        {
+            // Notify all Persons in the next round by Email. Pass in zero as current round when Tournament is created.
+
+            foreach (MatchupEntry e in m.Entries)
+            {
+                if (e.TeamCompeting != null)
+                {
+                    foreach (Person p in e.TeamCompeting.TeamMembers)
+                    {
+                        string opponent = "";
+                        MatchupEntry oppEntry = m.Entries.Where(x => x.TeamCompeting != e.TeamCompeting).FirstOrDefault();
+
+                        if (oppEntry != null) opponent = oppEntry.DisplayName;
+
+                        EmailLogic.EmailUserNewRound(p, e.TeamCompeting.TeamName, opponent);
+                    }
+                }
+            }
+        }
+
+        public static void FirstRoundAlert(int currentRound, Tournament tournament)
+        {
+            // Notify all Persons in the next round by Email. Pass in zero as current round when Tournament is created.
+
+            foreach (Matchup m in tournament.Rounds[currentRound])
+            {
+                NewRoundAlert(m);
             }
         }
 

@@ -104,11 +104,17 @@ namespace TrackerUI
             {
                 Tournament newTournament = new Tournament(tournamentNameBox.Text, decimal.Parse(entryFeeBox.Text), tournamentTeams, tournamentPrizes);
 
+                // Create rounds and matchups
                 TournamentLogic.CreateRounds(newTournament);
 
+                // Save the tournament to SQL or Files
                 GlobalConfig.Connection.CreateTournament(newTournament);
 
+                // Update the dashboard
                 callingRequestor.TournamentCompleted(newTournament);
+
+                // Email all users
+                TournamentLogic.FirstRoundAlert(0, newTournament);
 
                 TournamentViewer tvForm = new TournamentViewer(newTournament);
                 tvForm.Show();

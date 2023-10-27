@@ -39,14 +39,14 @@ namespace TrackerLibrary
             return ConfigurationManager.AppSettings["userEmail"];
         }
 
-        public static string UserKey()
+        public static string AppKey()
         {
-            return ConfigurationManager.AppSettings["userKey"];
+            return ConfigurationManager.AppSettings["appKey"];
         }
 
-        public static string UserName()
+        public static string FromName()
         {
-            return ConfigurationManager.AppSettings["userName"];
+            return ConfigurationManager.AppSettings["fromName"];
         }
 
         public static string EmailHost()
