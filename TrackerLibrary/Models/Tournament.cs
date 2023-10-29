@@ -2,6 +2,8 @@
 {
     public class Tournament
     {
+        public event EventHandler<DateTime> OnTournamentComplete;
+
         /// <summary>
         /// Unique ID of the Tournament
         /// </summary>
@@ -43,6 +45,11 @@
             EntryFee = entryFee;
             Teams = teams;
             Prizes = prizes;
+        }
+
+        public void TournamentComplete()
+        {
+            OnTournamentComplete?.Invoke(this, DateTime.Now);
         }
 
     }

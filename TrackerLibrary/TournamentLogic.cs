@@ -336,6 +336,8 @@ namespace TrackerLibrary
                     }
                 }
             }
+
+            tournament.TournamentComplete();
         }
 
         private static decimal CalculatePrizePayout(this Prize prize, decimal totalIncome)

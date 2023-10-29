@@ -18,7 +18,16 @@ namespace TrackerUI
 
             tournament = loadedTournament;
 
+            tournament.OnTournamentComplete += Tournament_OnTournamentComplete;
+
             LoadTournamentData();
+        }
+
+        private void Tournament_OnTournamentComplete(object? sender, DateTime e)
+        {
+            MessageBox.Show("Tournament Complete", "System");
+
+            this.Close();
         }
 
         private void LoadTournamentData()
