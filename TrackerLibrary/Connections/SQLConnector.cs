@@ -353,5 +353,18 @@ namespace TrackerLibrary.Connections
                 dbConnection.Execute("dbo.spMatchupEntry_UpdateTeam", p, commandType: CommandType.StoredProcedure);
             }
         }
+
+        public void CompleteTournament(Tournament tournament)
+        {
+            using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
+            {
+                var p = new DynamicParameters();
+
+                p.Add("@id", tournament.ID);
+
+                dbConnection.Execute("dbo.spTournament_Complete", p, commandType: CommandType.StoredProcedure);
+            }
+        }
+
     }
 }

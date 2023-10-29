@@ -8,12 +8,12 @@ namespace TrackerLibrary
     {
         public static void CreateRounds(Tournament newTournament)
         {
-            List<Team> randomizedTeams = RandomizeTeams( newTournament.Teams );
-            int numberOfRounds = GetNumberOfRounds( randomizedTeams.Count );
-            int byes = GetNumberOfByes( randomizedTeams.Count, numberOfRounds );
+            List<Team> randomizedTeams = RandomizeTeams(newTournament.Teams);
+            int numberOfRounds = GetNumberOfRounds(randomizedTeams.Count);
+            int byes = GetNumberOfByes(randomizedTeams.Count, numberOfRounds);
 
-            newTournament.Rounds.Add( CreateFirstRound( randomizedTeams, byes ) );
-            CreateRemainingRounds( newTournament, numberOfRounds );
+            newTournament.Rounds.Add(CreateFirstRound(randomizedTeams, byes));
+            CreateRemainingRounds(newTournament, numberOfRounds);
         }
 
         private static List<Team> RandomizeTeams(List<Team> teams)
@@ -26,12 +26,12 @@ namespace TrackerLibrary
             // Log2(1)=0, Log2(2)=1 , Log2(4)=2 , Log2(8)=3 , Log2(16)=4 , ...
 
             if (count <= 2) return 1;
-            else            return (int) Math.Ceiling( Math.Log2(count) );
+            else return (int)Math.Ceiling(Math.Log2(count));
         }
 
         private static int GetNumberOfByes(int count, int rounds)
         {
-            return (int) Math.Pow(2, rounds) - count;
+            return (int)Math.Pow(2, rounds) - count;
         }
 
         private static List<Matchup> CreateFirstRound(List<Team> teams, int byes)
@@ -41,7 +41,7 @@ namespace TrackerLibrary
 
             foreach (Team team in teams)
             {
-                currentMatchup.Entries.Add( new MatchupEntry { TeamCompeting = team } );
+                currentMatchup.Entries.Add(new MatchupEntry { TeamCompeting = team });
 
                 if (byes > 0 || currentMatchup.Entries.Count > 1)
                 {
@@ -67,7 +67,7 @@ namespace TrackerLibrary
             {
                 foreach (Matchup oldMatchup in previousRound)
                 {
-                    currentMatchup.Entries.Add( new MatchupEntry { ParentMatchup = oldMatchup } );
+                    currentMatchup.Entries.Add(new MatchupEntry { ParentMatchup = oldMatchup });
 
                     if (currentMatchup.Entries.Count > 1)
                     {
@@ -147,15 +147,32 @@ namespace TrackerLibrary
 
                 GlobalConfig.Connection.UpdateMatchup(selectedMatchup);
 
-                // Update TeamCompeting of MatchupEntry in next round with the Winner and reset subsequent rounds
+                // Update TeamCompeting of the following MatchupEntry in next round if there are rounds left
 
-                try
+                if (selectedMatchup.Round < tournament.Rounds.Count)
                 {
-                    UpdateNextRound(selectedMatchup, tournament);
+                    try
+                    {
+                        UpdateNextRound(selectedMatchup, tournament);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
                 }
-                catch (Exception ex)
+
+                // If there's no more round AND no more match to play this round then tournament is complete
+
+                else if (RoundComplete(selectedMatchup.Round, tournament))
                 {
-                    throw new Exception(ex.Message);
+                    try
+                    {
+                        TournamentFinished(tournament);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
                 }
             }
             else
@@ -166,78 +183,52 @@ namespace TrackerLibrary
 
         private static void UpdateNextRound(Matchup selectedMatchup, Tournament tournament)
         {
-            // Get the round we were working on and if there's still matches left to play
-
-            int currentRound = selectedMatchup.Round;
-            bool unplayedMatchesInRound = tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
-
             // Update the next round MatchupEntry with the Winner as TeamCompeting, if there is another round to play
 
-            if (currentRound < tournament.Rounds.Count)
+            foreach (Matchup m in tournament.Rounds[selectedMatchup.Round])
             {
-                foreach (Matchup m in tournament.Rounds[currentRound])
+                List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
+
+                if (foundEntry.Count > 0)
                 {
-                    List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
+                    // If current Matchup doesn't have a winner, there's no team competing here
 
-                    if (foundEntry.Count > 0)
+                    if (selectedMatchup.Winner != null)
                     {
-                        // If current Matchup doesn't have a winner, there's no team competing here
-
-                        if (selectedMatchup.Winner != null)
-                        {
-                            foundEntry.First().TeamCompeting = selectedMatchup.Winner;
-                        }
-                        else
-                        {
-                            foundEntry.First().TeamCompeting = null;
-                        }
-
-                        GlobalConfig.Connection.UpdateTeamCompeting(foundEntry.First());
-
-                        // Reset the Winner and scores in case this was processed before
-
-                        m.Winner = null;
-                        m.Entries.ForEach(x => x.Score = 0);
-
-                        GlobalConfig.Connection.UpdateMatchup(m);
-
-                        // Run it again for the next round after this, so the relevant result is also reset
-
-                        try
-                        {
-                            UpdateNextRound(m, tournament);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception(ex.Message);
-                        }
+                        foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                    }
+                    else
+                    {
+                        foundEntry.First().TeamCompeting = null;
                     }
 
-                    // If all matches were played in the round of "selectedMatchup", notify each user in the next round
+                    GlobalConfig.Connection.UpdateTeamCompeting(foundEntry.First());
 
-                    if (!unplayedMatchesInRound)
+                    // Reset the Winner and scores of the next round Matchup in case this was processed before
+
+                    ResetMatchup(m);
+
+                    GlobalConfig.Connection.UpdateMatchup(m);
+
+                    // Run it again for the next round after this, so the relevant result is also reset
+
+                    try
                     {
-                        try
-                        { 
-                            NewRoundAlert(m);
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new Exception(ex.Message);
-                        }
+                        UpdateNextRound(m, tournament);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
                     }
                 }
-            }
 
-            // If there's no more round AND no more match to play then tournament is complete
+                // If all matches were played in the round of "selectedMatchup", notify each user in the next round
 
-            else
-            {
-                if ( !unplayedMatchesInRound )
+                if (RoundComplete(selectedMatchup.Round, tournament))
                 {
                     try
-                    { 
-                        TournamentFinishedAlert(tournament);
+                    {
+                        NewRoundAlert(m);
                     }
                     catch (Exception ex)
                     {
@@ -245,6 +236,17 @@ namespace TrackerLibrary
                     }
                 }
             }
+        }
+
+        private static bool RoundComplete(int currentRound, Tournament tournament)
+        {
+            return !tournament.Rounds[currentRound - 1].Any(x => x.Winner == null);
+        }
+
+        private static void ResetMatchup(Matchup m)
+        {
+            m.Winner = null;
+            m.Entries.ForEach(x => x.Score = 0);
         }
 
         private static void NewRoundAlert(Matchup m)
@@ -264,39 +266,11 @@ namespace TrackerLibrary
 
                         try
                         {
-                            EmailLogic.EmailUserNewRound(p, e.TeamCompeting.TeamName, opponent);
+                            EmailLogic.EmailUserNewRound(p.Email, e.TeamCompeting.TeamName, opponent);
                         }
                         catch (Exception ex)
                         {
                             throw new Exception(ex.Message);
-                        }
-                    }
-                }
-            }
-        }
-
-        private static void TournamentFinishedAlert(Tournament tournament)
-        {
-            // Notify all Participants (Persons from the first round matchups)
-
-            foreach (Matchup m in tournament.Rounds[0])
-            {
-                foreach (MatchupEntry e in m.Entries)
-                {
-                    if (e.TeamCompeting != null)
-                    {
-                        foreach (Person p in e.TeamCompeting.TeamMembers)
-                        {
-                            string winner = tournament.Rounds[tournament.Rounds.Count - 1].FirstOrDefault().Winner.TeamName;
-
-                            try
-                            {
-                                EmailLogic.EmailUserTournamentFinished(p, e.TeamCompeting.TeamName, winner);
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new Exception(ex.Message);
-                            }
                         }
                     }
                 }
@@ -310,7 +284,7 @@ namespace TrackerLibrary
             foreach (Matchup m in tournament.Rounds[0])
             {
                 try
-                { 
+                {
                     NewRoundAlert(m);
                 }
                 catch (Exception ex)
@@ -318,6 +292,66 @@ namespace TrackerLibrary
                     throw new Exception(ex.Message);
                 }
             }
+        }
+
+        private static void TournamentFinished(Tournament tournament)
+        {
+            GlobalConfig.Connection.CompleteTournament(tournament);
+
+            Team winner = tournament.Rounds.Last().FirstOrDefault().Winner;
+            Team runnerUp = tournament.Rounds.Last().FirstOrDefault().Entries.Where(x => x.TeamCompeting != winner).First().TeamCompeting;
+
+            decimal winnerAmount = 0, runnerUpAmount = 0;
+            Prize winnerPrize, runnerUpPrize;
+
+            if (tournament.Prizes.Count > 0)
+            {
+                decimal totalIncome = tournament.Teams.Count * tournament.EntryFee;
+
+                winnerPrize = tournament.Prizes.Where(x => x.PlaceNumber == 1).FirstOrDefault();
+                runnerUpPrize = tournament.Prizes.Where(x => x.PlaceNumber == 2).FirstOrDefault();
+
+                if (winnerPrize != null)
+                {
+                    winnerAmount = winnerPrize.CalculatePrizePayout(totalIncome);
+                }
+                if (runnerUpPrize != null)
+                {
+                    runnerUpAmount = runnerUpPrize.CalculatePrizePayout(totalIncome);
+                }
+
+            }
+
+            foreach (Team t in tournament.Teams)
+            {
+                foreach (Person p in t.TeamMembers)
+                {
+                    try
+                    {
+                        EmailLogic.EmailUserTournamentFinished(p.Email, t.TeamName, winner.TeamName, runnerUp.TeamName, winnerAmount, runnerUpAmount);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
+                    }
+                }
+            }
+        }
+
+        private static decimal CalculatePrizePayout(this Prize prize, decimal totalIncome)
+        {
+            decimal output;
+
+            if (prize.PrizeAmount > 0)
+            {
+                output = prize.PrizeAmount;
+            }
+            else
+            {
+                output = Decimal.Multiply(totalIncome, Convert.ToDecimal(prize.PrizePercentage / 100));
+            }
+
+            return output;
         }
 
     }

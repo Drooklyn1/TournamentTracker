@@ -158,5 +158,17 @@ namespace TrackerLibrary.Connections
                 FileProcessor.UpdateMatchupEntry(matchupEntriesData, matchupEntry);
             }
         }
+
+        public void CompleteTournament(Tournament tournament)
+        {
+            List<string> tournamentsData = GlobalConfig.TournamentsFile.FullFilePath().LoadFile();
+
+            List<Tournament> tournaments = tournamentsData.ConvertToTournaments();
+
+            //tournaments.Remove(tournament);
+
+            //GlobalConfig.TournamentsFile.FullFilePath().SaveTournaments(tournamentsData, tournament);
+        }
+
     }
 }
