@@ -23,8 +23,6 @@ namespace TrackerLibrary
 
         private static int GetNumberOfRounds(int count)
         {
-            // Log2(1)=0, Log2(2)=1 , Log2(4)=2 , Log2(8)=3 , Log2(16)=4 , ...
-
             if (count <= 2) return 1;
             else return (int)Math.Ceiling(Math.Log2(count));
         }
