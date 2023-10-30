@@ -143,20 +143,14 @@ namespace TrackerLibrary.Connections
             List<string> matchupsData = GlobalConfig.MatchupsFile.FullFilePath().LoadFile();
             List<string> matchupEntriesData = GlobalConfig.MatchupEntriesFile.FullFilePath().LoadFile();
 
-            if (matchup.Winner != null && matchup.Entries.Count > 0)
-            {
-                FileProcessor.UpdateMatchup(matchupsData, matchupEntriesData, matchup);
-            }
+            FileProcessor.UpdateMatchup(matchupsData, matchupEntriesData, matchup);
         }
 
         public void UpdateTeamCompeting(MatchupEntry matchupEntry)
         {
             List<string> matchupEntriesData = GlobalConfig.MatchupEntriesFile.FullFilePath().LoadFile();
 
-            if (matchupEntry.TeamCompeting != null)
-            {
-                FileProcessor.UpdateMatchupEntry(matchupEntriesData, matchupEntry);
-            }
+            FileProcessor.UpdateMatchupEntry(matchupEntriesData, matchupEntry);
         }
 
         public void CompleteTournament(Tournament tournament)

@@ -36,12 +36,12 @@ namespace TrackerLibrary.Connections
             {
                 allTeams = dbConnection.Query<Team>("dbo.spTeams_GetAll").ToList();
 
-                foreach (Team t in allTeams)
+                foreach (Team team in allTeams)
                 {
                     var p = new DynamicParameters();
-                    p.Add("@TeamID", t.ID);
+                    p.Add("@TeamID", team.ID);
 
-                    t.TeamMembers = dbConnection.Query<Person>("dbo.spPersons_GetByTeam", p, commandType: CommandType.StoredProcedure).ToList();
+                    team.TeamMembers = dbConnection.Query<Person>("dbo.spPersons_GetByTeam", p, commandType: CommandType.StoredProcedure).ToList();
                 }
             }
 
@@ -77,7 +77,7 @@ namespace TrackerLibrary.Connections
                         foreach (Team team in t.Teams)
                         {
                             p2 = new DynamicParameters();
-                            p2.Add("@TeamID", t.ID);
+                            p2.Add("@TeamID", team.ID);
 
                             team.TeamMembers = dbConnection.Query<Person>("dbo.spPersons_GetByTeam", p2, commandType: CommandType.StoredProcedure).ToList();
                         }
@@ -300,10 +300,10 @@ namespace TrackerLibrary.Connections
                         p.Add("@MatchupID", matchup.ID);
 
                         if (entry.ParentMatchup == null) p.Add("@ParentMatchupID", null);
-                        else                             p.Add("@ParentMatchupID", entry.ParentMatchup.ID);
+                        else p.Add("@ParentMatchupID", entry.ParentMatchup.ID);
 
                         if (entry.TeamCompeting == null) p.Add("@TeamCompetingID", null);
-                        else                             p.Add("@TeamCompetingID", entry.TeamCompeting.ID);
+                        else p.Add("@TeamCompetingID", entry.TeamCompeting.ID);
 
                         p.Add("@id", 0, dbType: DbType.Int32, direction: ParameterDirection.Output);
 
@@ -317,26 +317,24 @@ namespace TrackerLibrary.Connections
 
         public void UpdateMatchup(Matchup matchup)
         {
-            if ( matchup.Winner != null && matchup.Entries.Count > 0 ) 
+            using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
-                using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
+                var p = new DynamicParameters();
+                p.Add("@id", matchup.ID);
+
+                if (matchup.Winner != null) p.Add("@WinnerID", matchup.Winner.ID);
+                else p.Add("@WinnerID", null);
+
+                dbConnection.Execute("dbo.spMatchup_Update", p, commandType: CommandType.StoredProcedure);
+
+                foreach (MatchupEntry entry in matchup.Entries)
                 {
-                    var p = new DynamicParameters();
+                    p = new DynamicParameters();
 
-                    p.Add("@id", matchup.ID);
-                    p.Add("@WinnerID", matchup.Winner.ID);
+                    p.Add("@id", entry.ID);
+                    p.Add("@Score", entry.Score);
 
-                    dbConnection.Execute("dbo.spMatchup_Update", p, commandType: CommandType.StoredProcedure);
-                    
-                    foreach (MatchupEntry entry in matchup.Entries)
-                    {
-                        p = new DynamicParameters();
-
-                        p.Add("@id", entry.ID);
-                        p.Add("@Score", entry.Score);
-
-                        dbConnection.Execute("dbo.spMatchupEntry_UpdateScore", p, commandType: CommandType.StoredProcedure);
-                    }
+                    dbConnection.Execute("dbo.spMatchupEntry_UpdateScore", p, commandType: CommandType.StoredProcedure);
                 }
             }
         }
@@ -346,9 +344,10 @@ namespace TrackerLibrary.Connections
             using (IDbConnection dbConnection = new System.Data.SqlClient.SqlConnection(GlobalConfig.ConnectionString(db)))
             {
                 var p = new DynamicParameters();
-
                 p.Add("@id", matchupEntry.ID);
-                p.Add("@TeamCompetingID", matchupEntry.TeamCompeting.ID);
+
+                if (matchupEntry.TeamCompeting != null) p.Add("@TeamCompetingID", matchupEntry.TeamCompeting.ID);
+                else p.Add("@TeamCompetingID", null);
 
                 dbConnection.Execute("dbo.spMatchupEntry_UpdateTeam", p, commandType: CommandType.StoredProcedure);
             }

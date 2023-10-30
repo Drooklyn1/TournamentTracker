@@ -149,21 +149,18 @@ namespace TrackerLibrary
 
                 // Update TeamCompeting of the following MatchupEntry in next round if there are rounds left
 
-                if (selectedMatchup.Round < tournament.Rounds.Count)
+                try
                 {
-                    try
-                    {
-                        UpdateNextRound(selectedMatchup, tournament);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(ex.Message);
-                    }
+                    UpdateNextRound(selectedMatchup, tournament);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
                 }
 
                 // If there's no more round AND no more match to play this round then tournament is complete
 
-                else if (RoundComplete(selectedMatchup.Round, tournament))
+                if (selectedMatchup.Round >= tournament.Rounds.Count && RoundComplete(selectedMatchup.Round, tournament))
                 {
                     try
                     {
@@ -183,56 +180,59 @@ namespace TrackerLibrary
 
         private static void UpdateNextRound(Matchup selectedMatchup, Tournament tournament)
         {
-            // Update the next round MatchupEntry with the Winner as TeamCompeting, if there is another round to play
-
-            foreach (Matchup m in tournament.Rounds[selectedMatchup.Round])
+            if (selectedMatchup.Round < tournament.Rounds.Count)
             {
-                List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
+                // Update the next round MatchupEntry with the Winner as TeamCompeting, if there is another round to play
 
-                if (foundEntry.Count > 0)
+                foreach (Matchup m in tournament.Rounds[selectedMatchup.Round])
                 {
-                    // If current Matchup doesn't have a winner, there's no team competing here
+                    List<MatchupEntry> foundEntry = m.Entries.Where(x => x.ParentMatchup.ID == selectedMatchup.ID).ToList();
 
-                    if (selectedMatchup.Winner != null)
+                    if (foundEntry.Count > 0)
                     {
-                        foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                        // If current Matchup doesn't have a winner, there's no team competing here
+
+                        if (selectedMatchup.Winner != null)
+                        {
+                            foundEntry.First().TeamCompeting = selectedMatchup.Winner;
+                        }
+                        else
+                        {
+                            foundEntry.First().TeamCompeting = null;
+                        }
+
+                        GlobalConfig.Connection.UpdateTeamCompeting(foundEntry.First());
+
+                        // Reset the Winner and scores of the next round Matchup in case this was processed before
+
+                        ResetMatchup(m);
+
+                        GlobalConfig.Connection.UpdateMatchup(m);
+
+                        // Run it again for the next round after this, so the relevant result is also reset
+
+                        try
+                        {
+                            UpdateNextRound(m, tournament);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
                     }
-                    else
+
+                    // If all matches were played in the round of "selectedMatchup", notify each user in the next round
+
+                    if (RoundComplete(selectedMatchup.Round, tournament))
                     {
-                        foundEntry.First().TeamCompeting = null;
-                    }
-
-                    GlobalConfig.Connection.UpdateTeamCompeting(foundEntry.First());
-
-                    // Reset the Winner and scores of the next round Matchup in case this was processed before
-
-                    ResetMatchup(m);
-
-                    GlobalConfig.Connection.UpdateMatchup(m);
-
-                    // Run it again for the next round after this, so the relevant result is also reset
-
-                    try
-                    {
-                        UpdateNextRound(m, tournament);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(ex.Message);
-                    }
-                }
-
-                // If all matches were played in the round of "selectedMatchup", notify each user in the next round
-
-                if (RoundComplete(selectedMatchup.Round, tournament))
-                {
-                    try
-                    {
-                        NewRoundAlert(m);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception(ex.Message);
+                        try
+                        {
+                            NewRoundAlert(m);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(ex.Message);
+                        }
                     }
                 }
             }
