@@ -82,8 +82,16 @@ namespace TrackerUI
 
         private void createPrizeButton_Click(object sender, EventArgs e)
         {
-            PrizeCreator pcForm = new PrizeCreator(this);
-            pcForm.Show();
+            if (tournamentPrizes.Count <= 1)
+            { 
+                PrizeCreator pcForm = new PrizeCreator(this);
+                pcForm.Show();
+            }
+            else
+            {
+                MessageBox.Show("Maximum 2 prices are supported", "System");
+            }
+
         }
 
         private void removePrizeLink_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -156,9 +164,15 @@ namespace TrackerUI
 
         public void PrizeCompleted(Prize newPrize)
         {
-            tournamentPrizes.Add(newPrize);
-
-            LinkLists();
+            if (tournamentPrizes.Count <= 1)
+            {
+                tournamentPrizes.Add(newPrize);
+                LinkLists();
+            }
+            else
+            {
+                MessageBox.Show("Maximum 2 prices are supported", "System");
+            }
         }
 
         public void TeamCompleted(Team newTeam)
