@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
-using System.Data;
 using TrackerLibrary.Connections;
+using TrackerLibrary.Models;
 
 namespace TrackerLibrary
 {
@@ -14,6 +14,7 @@ namespace TrackerLibrary
         public const string MatchupEntriesFile = "MatchupEntriesFile.csv";
 
         public static IDataConnection Connection { get; private set; }
+        public static EmailConfig EmailConfig { get; private set; } = new EmailConfig();
 
         public static void InitializeConnections()
         {
@@ -51,34 +52,18 @@ namespace TrackerLibrary
             return ConfigurationManager.AppSettings["winnerDetermination"];
         }
 
-        public static string UserEmail()
-        {
-            return ConfigurationManager.AppSettings["userEmail"];
-        }
-
-        public static string AppKey()
-        {
-            return ConfigurationManager.AppSettings["appKey"];
-        }
-
-        public static string FromName()
-        {
-            return ConfigurationManager.AppSettings["fromName"];
-        }
-
-        public static string EmailHost()
-        {
-            return ConfigurationManager.AppSettings["emailHost"];
-        }
-
-        public static int EmailPort()
-        {
-            return int.Parse(ConfigurationManager.AppSettings["emailPort"]);
-        }
-
         public static string ConnectionString(string dbName)
         {
             return ConfigurationManager.ConnectionStrings[dbName].ConnectionString;
+        }
+
+        public static void UpdateEmailConfig(string userName, string userEmail, string userPassword, string userHost, int userPort)
+        {
+            EmailConfig.UserName = userName;
+            EmailConfig.UserEmail = userEmail;
+            EmailConfig.UserPassword = userPassword;
+            EmailConfig.UserHost = userHost;
+            EmailConfig.UserPort = userPort;
         }
 
     }

@@ -51,5 +51,10 @@ namespace TrackerUI
             LoadAllTournamentsList();
             LinkList();
         }
+
+        private void saveEmailButton_Click(object sender, EventArgs e)
+        {
+            GlobalConfig.UpdateEmailConfig(fromNameBox.Text, emailBox.Text, passwordBox.Text, hostBox.Text, int.Parse(portBox.Text));
+        }
     }
 }

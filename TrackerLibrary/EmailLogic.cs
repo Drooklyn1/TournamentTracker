@@ -108,7 +108,7 @@ namespace TrackerLibrary
         {
             MailMessage message = new MailMessage();
 
-            MailAddress fromAddress = new MailAddress(GlobalConfig.UserEmail(), GlobalConfig.FromName());
+            MailAddress fromAddress = new MailAddress(GlobalConfig.EmailConfig.UserEmail, GlobalConfig.EmailConfig.UserName);
 
             to.ForEach( toEmail => message.To.Add(toEmail) );
 
@@ -119,10 +119,10 @@ namespace TrackerLibrary
 
             SmtpClient smtpClient = new SmtpClient();
 
-            smtpClient.Host = GlobalConfig.EmailHost();
-            smtpClient.Port = GlobalConfig.EmailPort();
+            smtpClient.Host = GlobalConfig.EmailConfig.UserHost;
+            smtpClient.Port = GlobalConfig.EmailConfig.UserPort;
             smtpClient.UseDefaultCredentials = false;
-            smtpClient.Credentials = new NetworkCredential(GlobalConfig.UserEmail(), GlobalConfig.AppKey());
+            smtpClient.Credentials = new NetworkCredential(GlobalConfig.EmailConfig.UserEmail, GlobalConfig.EmailConfig.UserPassword);
             smtpClient.EnableSsl = true;
             smtpClient.DeliveryMethod = SmtpDeliveryMethod.Network;
 
