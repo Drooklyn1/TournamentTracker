@@ -532,7 +532,7 @@ namespace TrackerLibrary.Connections.FileProcesses
 
         private static Prize GetPrizeByID(int id)
         {
-            List<string> prizes = GlobalConfig.PersonsFile.FullFilePath().LoadFile();
+            List<string> prizes = GlobalConfig.PrizesFile.FullFilePath().LoadFile();
             List<string> foundPrizes = new List<string>();
 
             foreach (string prize in prizes)
